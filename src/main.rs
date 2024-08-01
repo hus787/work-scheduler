@@ -1,8 +1,4 @@
-use axum::{
-    http::StatusCode,
-    routing::{get, post},
-    Json, Router,
-};
+use axum::{http::StatusCode, routing::post, Json, Router};
 use serde::{Deserialize, Serialize};
 use tracing::{error, info};
 
@@ -14,12 +10,8 @@ async fn main() {
 
     // build our application with a route
     let app = Router::new()
-        // `GET /` goes to `root`
-        // tbd
-        .route("/", get(string_ret).post(string_ret))
         // `POST /schedule` goes to `create_schedule`
         .route("/schedule", post(create_schedule));
-
     // run our app with hyper, listening globally on port 3000
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     axum::serve(listener, app).await.unwrap();
@@ -34,13 +26,9 @@ async fn create_schedule(
     (StatusCode::OK, Json(shifts))
 }
 
-async fn string_ret() -> (StatusCode, String) {
-    error!("");
-    info!("{:?}", time::macros::datetime!(2020-01-01 00:00));
-    (StatusCode::OK, String::from("hello world\n"))
-}
-
 fn first_shift_day() -> time::Date {
+    // 2 days are added to the current time
+    // in case the current time is close to end of day
     use time::ext::NumericalDuration;
     let now_plus_two = time::OffsetDateTime::now_utc()
         .checked_add(2.days())
@@ -55,13 +43,13 @@ fn first_shift_day() -> time::Date {
 
 fn schedule_worker_shifts(payload: ScheduleNeed) -> Vec<Shift> {
     use time::ext::NumericalDuration;
-    info!("{:?}", payload);
+    info!("request made");
     let mut shifts: Vec<Shift> = Vec::new();
+
     if payload.workers.len() == 0 {
         return shifts;
     }
     let shifts_starts_from = first_shift_day();
-    // let shift_packed_days: u32 = (payload.work / (payload.workers.len() as u32));
     let mut shifts_scheduled = 0;
     let mut hours_scheduled = 0;
     while hours_scheduled < payload.work {
@@ -86,7 +74,6 @@ fn schedule_worker_shifts(payload: ScheduleNeed) -> Vec<Shift> {
         hours_scheduled += 8;
         shifts_scheduled += 1;
     }
-    info!("{:?}", shifts);
     return shifts;
 }
 
@@ -109,6 +96,7 @@ mod tests {
     use super::*;
     use std::collections::HashSet;
     use time::ext::NumericalDuration;
+
     #[test]
     fn all_shifts_are_eight_hours_long() {
         // A shift is 8 hours long

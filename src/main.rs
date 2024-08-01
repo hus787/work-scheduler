@@ -107,37 +107,61 @@ struct Shift {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use time::ext::NumericalDuration;
+
     #[test]
     fn all_shifts_are_eight_hours_long() {
-        // A worker has shifts
-        assert_eq!(1, 1);
+        // A shift is 8 hours long
+        let test_data = ScheduleNeed {
+            work: 33,
+            workers: vec![1, 2],
+        };
+        let shifts = schedule_worker_shifts(test_data);
+        for shift in shifts.iter() {
+            assert_eq!(shift.end_time - shift.start_time, 8.hours())
+        }
     }
     #[test]
     fn no_shift_if_no_work() {
-        assert_eq!(1, 1);
+        let test_data = ScheduleNeed {
+            work: 0,
+            workers: vec![1, 2],
+        };
+        let shifts = schedule_worker_shifts(test_data);
+        assert_eq!(shifts.len(), 0)
     }
     #[test]
     fn no_shift_if_no_worker() {
-        assert_eq!(1, 1);
+        let test_data = ScheduleNeed {
+            work: 10,
+            workers: Vec::new(),
+        };
+        let shifts = schedule_worker_shifts(test_data);
+        assert_eq!(shifts.len(), 0)
     }
     #[test]
     fn fill_max_possible_workers_in_a_day() {
-        assert_eq!(1, 1);
+        assert_eq!(1, 0);
     }
     #[test]
     fn worker_cannot_have_more_than_one_shift_per_day() {
         // A worker never has two shifts on the same day
         // (assumption that no more than 1 per day)
-        assert_eq!(1, 1);
+        assert_eq!(1, 0);
     }
     #[test]
     fn shifts_are_in_24_hour_table_in_multiples_of_eight() {
         // It is a 24 hour timetable 0-8, 8-16, 16-24
-        assert_eq!(1, 1);
+        assert_eq!(1, 0);
     }
     #[test]
     fn workers_are_provided_shifts_if_there_is_work() {
         // A worker has shifts
-        assert_eq!(1, 1);
+        let test_data = ScheduleNeed {
+            work: 10,
+            workers: vec![1, 2],
+        };
+        let shifts = schedule_worker_shifts(test_data);
+        assert_ne!(shifts.len(), 0)
     }
 }

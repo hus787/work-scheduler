@@ -3,6 +3,7 @@
 1. Install Rust on the system
 2. `cd` to project root
 3. `cargo run`
+4. service runs against port `3000`
 
 # How to run the test?
 

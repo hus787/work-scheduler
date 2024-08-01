@@ -40,13 +40,54 @@ async fn string_ret() -> (StatusCode, String) {
     (StatusCode::OK, String::from("hello world\n"))
 }
 
+fn first_shift_day() -> time::Date {
+    use time::ext::NumericalDuration;
+    let now_plus_two = time::OffsetDateTime::now_utc()
+        .checked_add(2.days())
+        .unwrap();
+    return time::Date::from_calendar_date(
+        now_plus_two.year(),
+        now_plus_two.month(),
+        now_plus_two.day(),
+    )
+    .unwrap();
+}
+
 fn schedule_worker_shifts(payload: ScheduleNeed) -> Vec<Shift> {
-    std::time::Instant::now();
+    use time::ext::NumericalDuration;
     info!("{:?}", payload);
     let mut shifts: Vec<Shift> = Vec::new();
-    let shift_packed_days: u32 = payload.work % (payload.workers.len() as u32);
-
-    vec![Shift { worker: 1 }, Shift { worker: 2 }]
+    if payload.workers.len() == 0 {
+        return shifts;
+    }
+    let shifts_starts_from = first_shift_day();
+    // let shift_packed_days: u32 = (payload.work / (payload.workers.len() as u32));
+    let mut shifts_scheduled = 0;
+    let mut hours_scheduled = 0;
+    while hours_scheduled < payload.work {
+        let start_time = time::OffsetDateTime::new_utc(
+            shifts_starts_from
+                .checked_add((shifts_scheduled / (payload.workers.len() as u32) as i64).days())
+                .unwrap(),
+            time::Time::from_hms(0, 0, 0).unwrap(),
+        );
+        let end_time = time::OffsetDateTime::new_utc(
+            shifts_starts_from
+                .checked_add((shifts_scheduled / (payload.workers.len() as u32) as i64).days())
+                .unwrap(),
+            time::Time::from_hms(8, 0, 0).unwrap(),
+        );
+        shifts.push(Shift {
+            worker: payload.workers
+                [(shifts_scheduled as u32 % (payload.workers.len() as u32)) as usize],
+            start_time,
+            end_time,
+        });
+        hours_scheduled += 8;
+        shifts_scheduled += 1;
+    }
+    info!("{:?}", shifts);
+    return shifts;
 }
 
 // the input to `scheduler` handler
@@ -59,14 +100,13 @@ struct ScheduleNeed {
 #[derive(Serialize, Debug)]
 struct Shift {
     worker: u32,
-    // start_time: time,
-    // end_time: time,
+    start_time: time::OffsetDateTime,
+    end_time: time::OffsetDateTime,
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn all_shifts_are_eight_hours_long() {
         // A worker has shifts

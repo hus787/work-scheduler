@@ -1,6 +1,6 @@
 use axum::{http::StatusCode, routing::post, Json, Router};
 use serde::{Deserialize, Serialize};
-use tracing::{error, info};
+use tracing::info;
 
 // A stateless application
 #[tokio::main]

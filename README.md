@@ -7,9 +7,15 @@
 
 # How to run the test?
 
-1. `cd` to project root
-2. `cargo test`
+1. Install Rust on the system
+2. `cd` to project root
+3. `cargo test`
 
+# How to run the program and test inside docker?
+
+1. Replace steps 1 and 2 in the sections about running the program and test with
+(replace `<repo-root-path>` with actual path)
+`docker run -it --rm -p 3000:3000 -v <repo-root-path>:/host/src rust sh -c 'cd /host/src;su'`
 
 # API
 

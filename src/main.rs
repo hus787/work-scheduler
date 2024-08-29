@@ -53,21 +53,23 @@ fn schedule_worker_shifts(payload: ScheduleNeed) -> Vec<Shift> {
     let mut shifts_scheduled = 0;
     let mut hours_scheduled = 0;
     while hours_scheduled < payload.work {
+        // days are fully packed with workers every consecutive day
+        // e.g. if 3 worker, 0/3=0, 1/3, 2/3=0..3/3=1 (next day)
+        let days_from_first_shift = shifts_scheduled / (payload.workers.len() as u32) as i64;
+
         let start_time = time::OffsetDateTime::new_utc(
             shifts_starts_from
-                .checked_add((shifts_scheduled / (payload.workers.len() as u32) as i64).days())
+                .checked_add(days_from_first_shift.days())
                 .unwrap(),
             time::Time::from_hms(0, 0, 0).unwrap(),
         );
-        let end_time = time::OffsetDateTime::new_utc(
-            shifts_starts_from
-                .checked_add((shifts_scheduled / (payload.workers.len() as u32) as i64).days())
-                .unwrap(),
-            time::Time::from_hms(8, 0, 0).unwrap(),
-        );
+        let end_time = start_time.checked_add(8.hours()).unwrap();
+
+        // circle among workers while not repeating
+        let worker =
+            payload.workers[(shifts_scheduled as u32 % (payload.workers.len() as u32)) as usize];
         shifts.push(Shift {
-            worker: payload.workers
-                [(shifts_scheduled as u32 % (payload.workers.len() as u32)) as usize],
+            worker,
             start_time,
             end_time,
         });

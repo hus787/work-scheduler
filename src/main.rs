@@ -43,7 +43,6 @@ fn first_shift_day() -> time::Date {
 
 fn schedule_worker_shifts(payload: ScheduleNeed) -> Vec<Shift> {
     use time::ext::NumericalDuration;
-    info!("request made");
     let mut shifts: Vec<Shift> = Vec::new();
 
     if payload.workers.len() == 0 {

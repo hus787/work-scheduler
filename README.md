@@ -24,7 +24,7 @@
 This API take JSON input with the hours of work that needs to be scheduled and the worker ids that are available for work. It returns the work schedules assigned to each worker
 
 
-### Request
+### Request (POST)
 
 `{"work": int, "workers":[id,..]}`
 
